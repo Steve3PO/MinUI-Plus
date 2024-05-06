@@ -36,7 +36,7 @@ See [more screenshots](github/).
 ## Added MinUI Plus Features
 
 - EasyLogoTweak v3.0.5 packaged in Extras
-- Drastic 1.8 with audio fix packaged in Extras
+- Drastic 1.8 with audio fix packaged in Base
 - WiFi: WIP
 
 ## Supported consoles
@@ -50,6 +50,7 @@ Base:
 - Super Nintendo Entertainment System
 - Sega Genesis
 - PlayStation
+- #NEW# Nintendo DS
 
 Extras:
 
@@ -61,4 +62,3 @@ Extras:
 - Super Game Boy
 - TurboGrafx-16 (and TurboGrafx-CD)
 - Virtual Boy
-- Nintendo DS ### NEW ###
