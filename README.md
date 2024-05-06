@@ -35,9 +35,9 @@ See [more screenshots](github/).
 
 ## Added MinUI Plus Features
 
--EasyLogoTweak v3.0.5 packaged in Extras
--Drastic 1.8 with audio fix packaged in Extras
--Wifi - WIP
+- EasyLogoTweak v3.0.5 packaged in Extras
+- Drastic 1.8 with audio fix packaged in Extras
+- WiFi: WIP
 
 ## Supported consoles
 
