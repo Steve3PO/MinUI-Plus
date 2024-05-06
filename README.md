@@ -1,11 +1,11 @@
-# MinUI
+# MinUI Plus
 
-MinUI is a focused, custom launcher and libretro frontend for the RGB30, M17 (early revs), Trimui Smart (and Pro), Miyoo Mini (and Plus), the Anbernic RG*XX family, and the GKD Pixel.
+MinUI Plus is customized MinUI with added QoL improvements
 
 <img src="github/minui-main.png" width=320 /> <img src="github/minui-menu-gbc.png" width=320 />  
 See [more screenshots](github/).
 
-## Features
+## Base MinUI Features
 
 - Simple launcher, simple SD card
 - No settings or configuration
@@ -33,12 +33,11 @@ See [more screenshots](github/).
   multiple devices from different
   manufacturers
 
-You can [grab the latest version here](https://github.com/shauninman/MinUI/releases).
+## Added MinUI Plus Features
 
-> Devices with a physical power switch
-> use MENU to sleep and wake instead of
-> POWER. Once asleep the device can safely
-> be powered off manually with the switch.
+- EasyLogoTweak v3.0.5 packaged in Extras
+- Drastic 1.8 with audio fix packaged in Extras
+- WiFi: WIP
 
 ## Supported consoles
 
@@ -62,12 +61,4 @@ Extras:
 - Super Game Boy
 - TurboGrafx-16 (and TurboGrafx-CD)
 - Virtual Boy
-
-
-## Legacy versions
-
-The original Trimui Model S version of MinUI has been archived [here](https://github.com/shauninman/MinUI-Legacy-Trimui-Model-S).
-
-The sequel, MiniUI for the Miyoo Mini, has been archived [here](https://github.com/shauninman/MiniUI-Legacy-Miyoo-Mini).
-
-The return of MinUI for the original Anbernic RG35XX has been archived [here](https://github.com/shauninman/MinUI-Legacy-RG35XX).
+- Nintendo DS ### NEW ###
