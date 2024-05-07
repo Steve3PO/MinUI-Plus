@@ -97,10 +97,10 @@ fi
 #######################################
 
 # wifi
-if [ -f /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/boot.sh ]; then
-	LD_PRELOAD= /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/boot.sh > /dev/null 2>&1 &
+if [ -f $SYSTEM_PATH/paks/WiFi.pak/boot.sh ]; then
+	LD_PRELOAD= $SYSTEM_PATH/paks/WiFi.pak/boot.sh > /dev/null 2>&1 &
 else
-	rm -rf /mnt/SDCARD/Tools/miyoomini/WiFi.pak/.wifi/wifi_on.txt
+	rm -rf $SDCARD_PATH/Tools/miyoomini/WiFi.pak/.wifi/wifi_on.txt
 	killall telnetd > /dev/null 2>&1 &
 fi
 
