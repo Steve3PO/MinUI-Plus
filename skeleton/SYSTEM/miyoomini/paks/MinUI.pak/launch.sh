@@ -94,6 +94,14 @@ if [ -f "$DATETIME_PATH" ]; then
 	DATETIME=`date +'%s'`
 	date -u -s "@$DATETIME"
 fi
+#######################################
+
+# wifi
+if [ -f /mnt/SDCARD/.system/paks/WiFi.pak/boot.sh ]; then
+	LD_PRELOAD= /mnt/SDCARD/.system/paks/WiFi.pak/boot.sh > /dev/null 2>&1 &
+else
+	killall telnetd > /dev/null 2>&1 &
+fi
 
 #######################################
 
