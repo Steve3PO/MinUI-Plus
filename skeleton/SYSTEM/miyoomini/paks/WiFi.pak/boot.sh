@@ -9,7 +9,7 @@ if [ -f /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/8188fu.ko ] && [ -f "$USERDA
 		killall telnetd > /dev/null 2>&1 &
 	fi
 	if ! cat /proc/modules | grep -c 8188fu; then
-		insmod /mnt/SDCARD/.system/paks/WiFi.pak/8188fu.ko
+		insmod /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/8188fu.ko
 	fi
 	ifconfig lo up
 	/customer/app/axp_test wifion
