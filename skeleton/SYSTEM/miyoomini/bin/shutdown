@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ -n "$DATETIME_PATH" ]; then
-	echo `date +'%F %T'` > "$DATETIME_PATH"
+if [ ! -z "$DATETIME_PATH" ]; then
+	date -u +%s > "$DATETIME_PATH"
 fi
 
 if $IS_PLUS; then

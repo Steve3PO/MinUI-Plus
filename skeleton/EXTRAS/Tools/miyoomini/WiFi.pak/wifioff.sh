@@ -1,9 +1,9 @@
 #!/bin/sh
 
-USERDATA_PATH="$(dirname "$0")"
+DIR="$(dirname "$0")"
+cd "$DIR"
 {
 rm -f "$USERDATA_PATH/.wifi/wifi_on.txt"
-echo "wifi_on.txt deleted"
 killall ntpd > /dev/null 2>&1 &
 killall telnetd > /dev/null 2>&1 &
 killall ftpd > /dev/null 2>&1 &

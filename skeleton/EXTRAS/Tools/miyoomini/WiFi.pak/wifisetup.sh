@@ -1,7 +1,7 @@
 #!/bin/sh
 
-USERDATA_PATH="$(dirname "$0")"
-cd "$USERDATA_PATH"
+DIR="$(dirname "$0")"
+cd "$DIR"
 {
 mkdir -p "$USERDATA_PATH/.wifi"
 

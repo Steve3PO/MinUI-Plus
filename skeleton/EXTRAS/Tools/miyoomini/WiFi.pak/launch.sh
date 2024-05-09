@@ -3,7 +3,7 @@
 DIR="$(dirname "$0")"
 cd "$DIR"
 {
-mkdir -p "$DIR/.wifi"
+mkdir -p "$USERDATA_PATH/.wifi"
 
 if [ ! -f /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/8188fu.ko ]; then
 
@@ -13,45 +13,37 @@ if [ ! -f /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/8188fu.ko ]; then
 fi
 
 WIFI_ON=0
-if [ -e "$DIR/.wifi/wifi_on.txt" ]; then
+if [ -e "$USERDATA_PATH/.wifi/wifi_on.txt" ]; then
 	if [ -f /appconfigs/wpa_supplicant.conf ]; then
 		WIFI_ON=1
-	#else
-	#	LD_PRELOAD= ./wifioff.sh > /dev/null 2>&1 &
+	else
+		LD_PRELOAD= ./wifioff.sh > /dev/null 2>&1 &
 	fi
 fi
 
 _WIFI_ON=$WIFI_ON
 while :; do
 	if [ ! -f /appconfigs/wpa_supplicant.conf ]; then
-		./bin/blank
 		show.elf ./wifi2.png
 		./bin/say "WiFi: Not configured"$'\n'$'\n'"Please configure your WiFi network"$'\n'"by pressing SELECT."
 	else
 		if [ $WIFI_ON -eq 1 ]; then
 			echo "WiFi: Enabled"
-			IP=$(ip route get 255.255.255.255 | awk '{print $NF;exit}')
-				echo "IP on launch: $IP" 
-				if [ -z "$IP" ]; then
-					./bin/blank
-					show.elf confirm.png
-					./bin/say "WiFi Enabled"$'\n'$'\n'"Connecting..."
-					./bin/confirm any 
-					exit 0
-							
-				#	while [ -z "$IP" ]
-				#	do
-				#		sleep 1
-				#		IP=$(ip route get 255.255.255.255 | awk '{print $NF;exit}')
-				#		echo "IP: $IP"
-				#	done
-				elif [ ! -z "$IP" ]; then
-					./bin/blank
-					show.elf ./wifi.png
-					./bin/say "Local IP: '$IP'"$'\n'$'\n'"Press A to disable"$'\n'"Or B to exit"
-				fi
+			serverAdr="8.8.8.8"
+			ping -c 1 $serverAdr > /dev/null 2>&1
+					
+			if [ $? -ne 0 ]; then
+				show.elf confirm.png
+				./bin/say "WiFi Enabled"$'\n'$'\n'"Connecting..."
+				./bin/confirm any 
+				exit 0
+			else
+				show.elf ./wifi.png
+				echo "$(date): Connected - ${serverAdr}";
+				IP=$(ip route get 255.255.255.255 | awk '{print $NF;exit}')
+				./bin/say "Local IP: '$IP'"$'\n'$'\n'"Press A to disable"$'\n'"Or B to exit"
+			fi
 		else
-			./bin/blank
 			show.elf ./wifi.png
 			./bin/say "WiFi: Disabled"$'\n'$'\n'"Press A to enable"$'\n'"Or B to exit"
 		fi
@@ -65,11 +57,11 @@ while :; do
 		if [ "$KeyPressed" = "A" ]; then
 			if [ -f /appconfigs/wpa_supplicant.conf ]; then
 				WIFI_ON=$(( ! WIFI_ON ))
+				./bin/blank
 				if [ $WIFI_ON -eq 1 ] && [ $_WIFI_ON -eq 0 ]; then
 					_WIFI_ON=1
 					LD_PRELOAD= ./wifion.sh > /dev/null 2>&1 &
-				elif [ $WIFI_ON -eq 0 ] && [ $_WIFI_ON -eq 1 ] && [ -e "$DIR/.wifi/wifi_on.txt" ]; then
-					./bin/blank
+				elif [ $WIFI_ON -eq 0 ] && [ $_WIFI_ON -eq 1 ] && [ -e "$USERDATA_PATH/.wifi/wifi_on.txt" ]; then
 					./bin/say "Disabling WiFi.."
 					echo "disabling wifi.."
 					LD_PRELOAD= ./wifioff.sh > /dev/null 2>&1 &

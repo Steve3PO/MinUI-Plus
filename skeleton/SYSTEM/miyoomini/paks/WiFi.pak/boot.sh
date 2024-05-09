@@ -1,7 +1,6 @@
 #!/bin/sh
 # WiFi.pak
 
-USERDATA_PATH="/mnt/SDCARD/Tools/miyoomini/WiFi.pak"
 mkdir -p "$USERDATA_PATH/.wifi"
 
 if [ -f /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/8188fu.ko ] && [ -f "$USERDATA_PATH/.wifi/wifi_on.txt" ] && [ -f /appconfigs/wpa_supplicant.conf ]; then
@@ -19,19 +18,12 @@ if [ -f /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/8188fu.ko ] && [ -f "$USERDA
 	ln -sf /dev/null /tmp/udhcpc.log
 	udhcpc -i wlan0 -s /etc/init.d/udhcpc.script > /dev/null 2>&1 &
 
-	# FTP
-	if [ -f "$USERDATA_PATH/.wifi/ftp_on.txt" ] && [ -f "$TOOLS_PATH/FTP.pak/launch.sh" ]; then
-		tcpsvd -E 0.0.0.0 21 ftpd -w /mnt/SDCARD > /dev/null 2>&1 &
-	fi
-
-	# SSH
-	if [ -f "$USERDATA_PATH/.wifi/ssh_on.txt" ] && [ -f "$TOOLS_PATH/SSH.pak/dropbear.sh" ]; then
-		"$TOOLS_PATH/SSH.pak/dropbear.sh" > /dev/null 2>&1 &
-	fi
-
 	# NTP
 	if [ -f "$USERDATA_PATH/.wifi/ntp_on.txt" ]; then
-		ntpd -p 216.239.35.12 -S "/sbin/hwclock -w -u" > /dev/null 2>&1 &
+		touch "$USERDATA_PATH/.wifi/ntp_on.txt"
+		if [ -f "$USERDATA_PATH/.wifi/wifi_on.txt" ]; then
+			LD_PRELOAD= ntpd -p 216.239.35.0 -S "/sbin/hwclock -w -u" > /dev/null 2>&1 &
+		fi
 	fi
 else
 	killall telnetd > /dev/null 2>&1 &

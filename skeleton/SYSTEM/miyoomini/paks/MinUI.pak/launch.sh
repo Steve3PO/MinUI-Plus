@@ -89,10 +89,13 @@ keymon.elf & # &> /mnt/SDCARD/keymon.txt &
 
 # init datetime
 if [ -f "$DATETIME_PATH" ]; then
-	DATETIME=`cat "$DATETIME_PATH"`
-	date +'%F %T' -s "$DATETIME"
-	DATETIME=`date +'%s'`
-	date -u -s "@$DATETIME"
+	DATETIME=$(cat "$DATETIME_PATH")
+	if [ -n "$DATETIME" ] && [ "$DATETIME" -eq "$DATETIME" ]; then
+		if [ ! -f "$USERDATA_PATH/.wifi/ntp_on.txt" ]; then
+			DATETIME=$((DATETIME + 6 * 60 * 60))
+		fi
+		date -u +%s -s "@$DATETIME"
+	fi
 fi
 #######################################
 
@@ -100,7 +103,7 @@ fi
 if [ -f $SYSTEM_PATH/paks/WiFi.pak/boot.sh ]; then
 	LD_PRELOAD= $SYSTEM_PATH/paks/WiFi.pak/boot.sh > /dev/null 2>&1 &
 else
-	rm -rf $SDCARD_PATH/Tools/miyoomini/WiFi.pak/.wifi/wifi_on.txt
+	rm -rf "$USERDATA_PATH/.wifi/wifi_on.txt"
 	killall telnetd > /dev/null 2>&1 &
 fi
 
@@ -122,7 +125,7 @@ while [ -f "$EXEC_PATH" ]; do
 	overclock.elf $CPU_SPEED_PERF
 	minui.elf &> $LOGS_PATH/minui.txt
 	
-	echo `date +'%F %T'` > "$DATETIME_PATH"
+	date -u +%s > "$DATETIME_PATH"
 	sync
 	
 	if [ -f $NEXT_PATH ]; then
@@ -134,10 +137,10 @@ while [ -f "$EXEC_PATH" ]; do
 			rm -f "/tmp/using-swap"
 		fi
 		
-		echo `date +'%F %T'` > "$DATETIME_PATH"
+		date -u +%s > "$DATETIME_PATH"
 		overclock.elf $CPU_SPEED_PERF
 		sync
 	fi
 done
 
-shutdown # just in case
+poweroff # just in case
