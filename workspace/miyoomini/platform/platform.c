@@ -417,6 +417,7 @@ int axp_read(unsigned char address) {
 
 ///////////////////////////////
 
+static int online = 0;
 void PLAT_getBatteryStatus(int* is_charging, int* charge) {
 	*is_charging = is_plus ? (axp_read(0x00) & 0x4) > 0 : getInt("/sys/devices/gpiochip0/gpio/gpio59/value");
 	
@@ -430,6 +431,11 @@ void PLAT_getBatteryStatus(int* is_charging, int* charge) {
 	else if (i>10) *charge =  20;
 	else           *charge =  10;
 
+	// // wifi status, just hooking into the regular PWR polling
+	char status[16];
+	getFile("/sys/class/net/wlan0/operstate", status,16);
+	online = prefixMatch("up", status);
+	
 	// TODO: tmp
 	// *is_charging = 0;
 	// *charge = PWR_LOW_CHARGE;
@@ -516,5 +522,5 @@ char* PLAT_getModel(void) {
 }
 
 int PLAT_isOnline(void) {
-	return 0;
+	return online;
 }
