@@ -100,11 +100,13 @@ fi
 #######################################
 
 # wifi
-if [ -f $SYSTEM_PATH/paks/WiFi.pak/boot.sh ]; then
-	LD_PRELOAD= $SYSTEM_PATH/paks/WiFi.pak/boot.sh > /dev/null 2>&1 &
-else
-	rm -rf "$USERDATA_PATH/.wifi/wifi_on.txt"
-	killall telnetd > /dev/null 2>&1 &
+if $IS_PLUS; then
+	if [ -f $SYSTEM_PATH/paks/WiFi.pak/boot.sh ]; then
+		LD_PRELOAD= $SYSTEM_PATH/paks/WiFi.pak/boot.sh > /dev/null 2>&1 &
+	else
+		rm -rf "$USERDATA_PATH/.wifi/wifi_on.txt"
+		killall telnetd > /dev/null 2>&1 &
+	fi
 fi
 
 #######################################
