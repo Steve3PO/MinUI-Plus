@@ -17,7 +17,12 @@ if [ -f /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/8188fu.ko ] && [ -f "$USERDA
 	/customer/app/wpa_supplicant -B -D nl80211 -iwlan0 -c /appconfigs/wpa_supplicant.conf
 	ln -sf /dev/null /tmp/udhcpc.log
 	udhcpc -i wlan0 -s /etc/init.d/udhcpc.script > /dev/null 2>&1 &
-
+	
+	# FTP
+	if [ -f "$USERDATA_PATH/.wifi/ftp_on.txt" ] && [ -f "$TOOLS_PATH/FTP.pak/launch.sh" ]; then
+		tcpsvd -E 0.0.0.0 21 ftpd -w /mnt/SDCARD > /dev/null 2>&1 &
+	fi
+	
 	# NTP
 	if [ -f "$USERDATA_PATH/.wifi/ntp_on.txt" ]; then
 		touch "$USERDATA_PATH/.wifi/ntp_on.txt"
