@@ -132,23 +132,25 @@ MENU="Choose one of the following options:"
 		current_ftp="Disabled"
 	fi
 
-OPTIONS=(1 "Add new network and connect"
-		 2 "Connect to stored network"
-         3 "Remove a network"
-         4 "Toggle a network (enable/disable)"
-         5 "WPS connection"
-         6 "Scan networks" 
-		 7 "Store a network manually (no connection)"
-         8 "Show stored networks"
-         9 "Get current status"
-		 10 "Restart WiFi"
-         11 "Backup wpa_supplicant.conf"
-		 12 "Restore backup wpa_supplicant.conf"
-		 13 "Wipe wpa_supplicant.conf"
-		 14	"Toggle Telnet: $current_telnet"
-		 15 "Toggle FTP: $current_ftp"
-		 16 "Toggle NTP (Time Sync): $current_ntp"
-         17 "Exit")
+OPTIONS=(1 "Get current status"
+		 2 "Disable WiFi"
+		 3 "Restart WiFi"
+		 4 "Add new network and connect"
+		 5 "Connect to stored network"
+         6 "Remove a network"
+         7 "Toggle a network (enable/disable)"
+         8 "WPS connection"
+         9 "Scan networks" 
+		 10 "Store a network manually (no connection)"
+         11 "Show stored networks"
+         12 "Backup wpa_supplicant.conf"
+		 13 "Restore backup wpa_supplicant.conf"
+		 14 "Wipe wpa_supplicant.conf"
+		 15	"Toggle Telnet: $current_telnet"
+		 16 "Toggle FTP: $current_ftp"
+		 17 "Toggle NTP (Time Sync): $current_ntp"
+		 18 "Set Timzone Offset"
+         19 "Exit")
 
 CHOICE=$($DIALOG --colors --no-lines \
 				--clear \
@@ -161,57 +163,63 @@ CHOICE=$($DIALOG --colors --no-lines \
 
 case $CHOICE in
         1)
-            add_new
-            ;;
-        2)
-            connect_stored
-            ;;
-        3)
-            remove_stored
-            ;;
-        4)
-            enable_disable_stored
-            ;;
-        5)
-            wps_menu
-            ;;
-        6)
-            scan_ssids
-            ;;
-        7)
-            store_new
-            ;;
-        8)
-            show_networks
-            ;;
-		9)
             show_info
-            ;;	
-        10)
+            ;;
+		2)
+            disable_wifi
+            ;;
+		3)
             restart_wifi
             ;;
-		11)
+        4)
+            add_new
+            ;;
+        5)
+            connect_stored
+            ;;
+        6)
+            remove_stored
+            ;;
+        7)
+            enable_disable_stored
+            ;;
+        8)
+            wps_menu
+            ;;
+        9)
+            scan_ssids
+            ;;
+        10)
+            store_new
+            ;;
+        11)
+            show_networks
+            ;;	
+		12)
             backup_wpa_supp
             ;;
-		12)
+		13)
             restore_backup
             ;;
-		13)
+		14)
             reset_wpa_supplicant
             ;;
-		14)
+		15)
             toggle_telnet "$current_telnet"
             ;;
-		15)
+		16)
             toggle_ftp "$current_ftp"
             ;;
-		16)
+		17)
             toggle_ntp "$current_ntp"
             ;;
-        17)
+		18)
+            tz_offset
+            ;;
+        19)
 			longdialoginfo  "Press Menu button to exit"
 			sleep 300
-
+			exit 0
             ;;
 esac
 }
@@ -597,42 +605,6 @@ show_networks() {
     $DIALOG --no-lines --title "$title" --msgbox "$network_list" $MAXHEIGHT $MAXWIDTH 2>&1 >/dev/tty
 }
 
-# change_ap_pass() {
-    # local new_pass=""
-    # while true; do
-        # new_pass=$($DIALOG --no-lines --inputbox "New AP password" 0 0 3>&1 1>&2 2>&3 3>&-)
-        
-        # if [ $? -eq 1 ]; then
-            # longdialoginfo "Password change cancelled."
-			# sleep 2
-            # return
-        # fi
-        
-        # if [ -z "$new_pass" ]; then
-            # longdialoginfo "Password cannot be empty. Please try again."
-			# sleep 2
-            # continue
-        # fi
-
-        # if [ ${#new_pass} -lt 8 ]; then
-            # longdialoginfo "Password should be at least 8 characters. Please try again."
-			# sleep 2
-            # continue
-        # fi
-
-        # break
-    # done
-
-    # sed -i -r "s/(wpa_passphrase=).*/\1$new_pass/" /mnt/SDCARD/.tmp_update/config/hostapd.conf
-    # if [ $? -eq 0 ]; then
-        # longdialoginfo "Password updated successfully."
-		# sleep 2
-    # else
-        # longdialoginfo "Failed to update the password."
-		# sleep 2
-    # fi
-# }
-
 restart_wifi() {
     $DIALOG --no-lines --yesno "Warning: Do you want to restart WiFi?" 0 0 2>&1 >/dev/tty
     response=$?
@@ -645,6 +617,13 @@ restart_wifi() {
 		
 		ifconfig wlan0 down
 		sleep 1
+		touch "$USERDATA_PATH/.wifi/wifi_on.txt"
+		if ! cat /proc/modules | grep -c 8188fu; then
+			insmod $miyoodir/paks/WiFi.pak/8188fu.ko
+		fi
+		ifconfig lo up
+		/customer/app/axp_test wifion
+		sleep 2
 		ifconfig wlan0 up
 		
         $WPACLI -i wlan0 disconnect >/dev/null 2>&1
@@ -665,6 +644,31 @@ restart_wifi() {
         sleep 1
     else
         longdialoginfo "Aborted. Wi-Fi reset was not performed."
+        sleep 1
+		return
+    fi
+    sleep 1
+}
+
+disable_wifi(){
+    $DIALOG --no-lines --yesno "Warning: Do you want to disable WiFi?" 0 0 2>&1 >/dev/tty
+    response=$?
+    if [ $response -eq 0 ]; then
+        longdialoginfo  "Disabling Wi-Fi..."
+		
+        sleep 1
+
+		rm -f "$USERDATA_PATH/.wifi/wifi_on.txt"
+		killall ntpd > /dev/null 2>&1 &
+		killall telnetd > /dev/null 2>&1 &
+		killall ftpd > /dev/null 2>&1 &
+		killall tcpsvd > /dev/null 2>&1 &
+		killall wpa_supplicant > /dev/null 2>&1 &
+		killall udhcpc > /dev/null 2>&1 &
+		ifconfig wlan0 down
+		/customer/app/axp_test wifioff
+	else
+        longdialoginfo "Aborted. Wi-Fi was not disabled."
         sleep 1
 		return
     fi
@@ -826,6 +830,11 @@ else
 	sleep 1
 	return
 fi
+}
+
+tz_offset(){
+
+return
 }
 
 main
