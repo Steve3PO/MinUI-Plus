@@ -322,7 +322,7 @@ int main(int argc , char* argv[]) {
 	
 	if (save_changes) {
 		char cmd[512];
-		snprintf(cmd, sizeof(cmd), "date -u -s '%d-%d-%d %d:%d:%d';hwclock --utc -w", year_selected, month_selected, day_selected, hour_selected, minute_selected, seconds_selected);
+		snprintf(cmd, sizeof(cmd), "date -s '%d-%d-%d %d:%d:%d';hwclock -l -w", year_selected, month_selected, day_selected, hour_selected, minute_selected, seconds_selected);
 		system(cmd);
 	}
 	
