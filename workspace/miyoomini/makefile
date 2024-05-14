@@ -19,8 +19,6 @@ all: readmes
 	cd lumon && make
 	cd show && make
 	cd overclock && make
-	cd keyboard && make
-	cd oss && make
 
 early: $(REQUIRES_SDL) $(REQUIRES_COMMANDER)
 	cd other/sdl && ./make.sh
@@ -32,8 +30,6 @@ clean:
 	cd batmon && make clean
 	cd lumon && make clean
 	cd show && make clean
-	cd keyboard && make clean
-	cd oss && make clean
 	cd other/sdl && make distclean
 	cd other/latency_reduction && make clean
 	cd other/DinguxCommander && make clean
