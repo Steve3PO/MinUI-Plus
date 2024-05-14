@@ -112,6 +112,14 @@ fi
 
 #######################################
 
+# Auto launch
+if $IS_PLUS; then
+	if [ -f $TOOLS_PATH/Syncthing.pak/launch.sh ]; then
+		sh $TOOLS_PATH/Syncthing.pak/script/checkrun.sh #SYNCTHING INJECTOR #SYNCTHING INJECTOR
+	fi
+fi
+#######################################
+
 AUTO_PATH=$USERDATA_PATH/auto.sh
 if [ -f "$AUTO_PATH" ]; then
 	"$AUTO_PATH"
