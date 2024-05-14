@@ -8,7 +8,7 @@ DIR="$(pwd)"
 typeset -x sysdir="/mnt/SDCARD/.tmp_update"
 typeset -x miyoodir="/mnt/SDCARD/.system/miyoomini"
 typeset -x TOOLS_PATH="/mnt/SDCARD/Tools/miyoomini"
-typeset -x LD_LIBRARY_PATH="$DIR/lib:/lib:/config/lib:$miyoodir/lib"
+typeset -x LD_LIBRARY_PATH="$DIR/lib:/lib:/config/lib:$miyoodir/lib:/customer/lib"
 typeset -x PATH="$miyoodir/bin:$PATH"
 
 init_static_globals() {
@@ -612,34 +612,52 @@ restart_wifi() {
         longdialoginfo  "Restarting Wi-Fi..."
 		
         sleep 1
+		killall ntpd > /dev/null 2>&1 &
+		killall telnetd > /dev/null 2>&1 &
+		killall ftpd > /dev/null 2>&1 &
+		killall tcpsvd > /dev/null 2>&1 &
 		kill_udhcpc
 		killall -9 wpa_supplicant
 		
 		ifconfig wlan0 down
+		/customer/app/axp_test wifioff
 		sleep 1
+		
 		touch "$USERDATA_PATH/.wifi/wifi_on.txt"
 		if ! cat /proc/modules | grep -c 8188fu; then
-			insmod $miyoodir/paks/WiFi.pak/8188fu.ko
+			insmod /mnt/SDCARD/.system/miyoomini/paks/WiFi.pak/8188fu.ko
 		fi
+		
 		ifconfig lo up
 		/customer/app/axp_test wifion
 		sleep 2
 		ifconfig wlan0 up
 		
-        $WPACLI -i wlan0 disconnect >/dev/null 2>&1
-
-        $WPACLI -i wlan0 terminate >/dev/null 2>&1
-
-        $WPACLI -i wlan0 reconfigure >/dev/null 2>&1
-		
 		longdialoginfo "Adaptor reset, starting wpa_supplicant"
 		sleep 1
 		
-		/customer/app/wpa_supplicant -B -D nl80211 -iwlan0 -c /appconfigs/wpa_supplicant.conf >/dev/null 2>&1 &
-		sleep 1
-		udhcpc -i wlan0 -s /etc/init.d/udhcpc.script > /dev/null 2>&1 &	
+		/customer/app/wpa_supplicant -B -D nl80211 -iwlan0 -c /appconfigs/wpa_supplicant.conf
+		ln -sf /dev/null /tmp/udhcpc.log
+		udhcpc -i wlan0 -s /etc/init.d/udhcpc.script > /dev/null 2>&1 &
+		/customer/app/wpa_cli -i wlan0 reconnect >/dev/null 2>&1
+
+		# FTP
+		if [ -f "$USERDATA_PATH/.wifi/ftp_on.txt" ]; then
+			LD_PRELOAD= tcpsvd -E 0.0.0.0 21 ftpd -w /mnt/SDCARD > /dev/null 2>&1 &
+		fi
 		
-		$WPACLI -i wlan0 reconnect >/dev/null 2>&1
+		# NTP
+		if [ -f "$USERDATA_PATH/.wifi/ntp_on.txt" ]; then
+			LD_PRELOAD= ntpd -p 216.239.35.0 -S "/sbin/hwclock -w -u" > /dev/null 2>&1 &
+		fi
+		
+		# TELNET
+		if [ -f "$USERDATA_PATH/.wifi/telnet_on.txt" ]; then
+			LD_PRELOAD= telnetd -l sh
+		else
+			killall telnetd > /dev/null 2>&1 &
+		fi		
+		
         longdialoginfo "Wi-Fi has been fully reset."
         sleep 1
     else
