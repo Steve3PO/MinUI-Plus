@@ -41,6 +41,7 @@ export USERDATA_PATH="$SDCARD_PATH/.userdata/$PLATFORM"
 export SHARED_USERDATA_PATH="$SDCARD_PATH/.userdata/shared"
 export LOGS_PATH="$USERDATA_PATH/logs"
 export DATETIME_PATH="$SHARED_USERDATA_PATH/datetime.txt" # used by bin/shutdown
+export TIMEZONE_PATH="$SHARED_USERDATA_PATH/tz.txt"
 export TOOLS_PATH="$SDCARD_PATH/Tools/miyoomini"
 
 mkdir -p "$USERDATA_PATH"
@@ -97,6 +98,15 @@ if [ -f "$DATETIME_PATH" ]; then
 		fi
 		date -u +%s -s "@$DATETIME"
 	fi
+fi
+
+# Timezone
+if [ -f "$USERDATA_PATH/.wifi/tz.txt" ]; then
+	tzoffset=$(head -n 1 $USERDATA_PATH/.wifi/tz.txt)
+	if [ -z "$tzoffset" ]; then
+		tzoffset="-0"
+	fi
+	export TZ="UTC$tzoffset" #dont care about abrv just need offset
 fi
 #######################################
 
