@@ -32,6 +32,8 @@ if [ -f "$SYSTEM_PATH/paks/WiFi.pak/8188fu.ko" ] && [ -f "$USERDATA_PATH/.wifi/w
 	# TELNET
 	if [ -f "$USERDATA_PATH/.wifi/telnet_on.txt" ]; then
 		LD_PRELOAD= telnetd -l sh
+	else
+		killall telnetd > /dev/null 2>&1 &
 	fi
 else
 	killall telnetd > /dev/null 2>&1 &
