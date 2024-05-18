@@ -101,13 +101,10 @@ if [ -f "$DATETIME_PATH" ]; then
 fi
 
 # Timezone
-if [ -f "$USERDATA_PATH/.wifi/tz.txt" ]; then
-	tzoffset=$(head -n 1 $USERDATA_PATH/.wifi/tz.txt)
-	if [ -z "$tzoffset" ]; then
-		tzoffset="-0"
-	fi
-	export TZ="UTC$tzoffset" #dont care about abrv just need offset
+if [ -f "$USERDATA_PATH/cmd.txt" ]; then
+	$(head -n 1 $USERDATA_PATH/cmd.txt)
 fi
+
 #######################################
 
 # wifi

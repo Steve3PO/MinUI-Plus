@@ -149,8 +149,7 @@ OPTIONS=(1 "Get current status"
 		 15	"Toggle Telnet: $current_telnet"
 		 16 "Toggle FTP: $current_ftp"
 		 17 "Toggle NTP (Time Sync): $current_ntp"
-		 18 "Set Timzone Offset"
-         19 "Exit")
+         18 "Exit")
 
 CHOICE=$($DIALOG --colors --no-lines \
 				--clear \
@@ -213,10 +212,7 @@ case $CHOICE in
 		17)
             toggle_ntp "$current_ntp"
             ;;
-		18)
-            tz_offset
-            ;;
-        19)
+        18)
 			longdialoginfo  "Press Menu button to exit"
 			sleep 300
 			exit 0
@@ -848,11 +844,6 @@ else
 	sleep 1
 	return
 fi
-}
-
-tz_offset(){
-
-return
 }
 
 main

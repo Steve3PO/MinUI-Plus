@@ -13,6 +13,8 @@ enum {
 	CURSOR_YEAR,
 	CURSOR_MONTH,
 	CURSOR_DAY,
+	CURSOR_PLUSMINUS,
+	CURSOR_GMTOFF,
 	CURSOR_HOUR,
 	CURSOR_MINUTE,
 	CURSOR_SECOND,
@@ -66,7 +68,16 @@ int main(int argc , char* argv[]) {
 	int32_t minute_selected = tm.tm_min;
 	int32_t seconds_selected = tm.tm_sec;
 	int32_t am_selected = tm.tm_hour < 12;
-	
+	int gmtoff_selected = 0;
+	//tm.tm_gmtoff does not work..
+	if (exists(USERDATA_PATH "/tz.txt")) {
+		char tz_txt[256];
+		getFile(USERDATA_PATH "/tz.txt", tz_txt, 256);
+		sscanf(tz_txt, "%d", &gmtoff_selected);
+	}
+	int isplusminus = exists(USERDATA_PATH "/plus");;
+	char tz[256];
+		
 	// x,y,w are pre-scaled
 	int blit(int i, int x, int y) {
 		SDL_BlitSurface(digits, &(SDL_Rect){i*SCALE1(10),0,SCALE2(10,16)}, screen, &(SDL_Rect){x,y});
@@ -135,9 +146,11 @@ int main(int argc , char* argv[]) {
 		else if (minute_selected < 0) minute_selected += 60;
 		if (seconds_selected > 59) seconds_selected -= 60;
 		else if (seconds_selected < 0) seconds_selected += 60;
+		if (gmtoff_selected > 23) gmtoff_selected -=24;
+		else if (gmtoff_selected < 0) gmtoff_selected +=24;
 	}
 	
-	int option_count = 7;
+	int option_count = (show_24hour ? CURSOR_SECOND : CURSOR_AMPM ) + 1;
 
 	int dirty = 1;
 	int show_setting = 0;
@@ -171,6 +184,18 @@ int main(int argc , char* argv[]) {
 				case CURSOR_AMPM:
 					hour_selected += 12;
 				break;
+				case CURSOR_GMTOFF:
+					gmtoff_selected++;
+				break;
+				case CURSOR_PLUSMINUS:
+					isplusminus = !isplusminus;
+					if (isplusminus) {
+						system("touch " USERDATA_PATH "/plus");
+					}
+					else {
+						system("rm " USERDATA_PATH "/plus");
+					}
+				break;
 				default:
 				break;
 			}
@@ -198,6 +223,18 @@ int main(int argc , char* argv[]) {
 				break;
 				case CURSOR_AMPM:
 					hour_selected -= 12;
+				break;
+				case CURSOR_GMTOFF:
+					gmtoff_selected--;
+				break;
+				case CURSOR_PLUSMINUS:
+					isplusminus = !isplusminus;
+					if (isplusminus) {
+						system("touch " USERDATA_PATH "/plus");
+					}
+					else {
+						system("rm " USERDATA_PATH "/plus");
+					}
 				break;
 				default:
 				break;
@@ -254,7 +291,7 @@ int main(int argc , char* argv[]) {
 		
 			// 376 or 446 (@2x)
 			// 188 or 223 (@1x)
-			int ox = (screen->w - (show_24hour?SCALE1(188):SCALE1(223))) / 2;
+			int ox = (screen->w - (show_24hour?SCALE1(253):SCALE1(283))) / 2;
 			
 			// datetime
 			int x = ox;
@@ -265,7 +302,14 @@ int main(int argc , char* argv[]) {
 			x = blitNumber(month_selected, x,y);
 			x = blit(CHAR_SLASH, x,y);
 			x = blitNumber(day_selected, x,y);
-			x += SCALE1(10); // space
+			x += SCALE1(7); // space
+			
+			snprintf(tz, sizeof(tz), "%s%s", "GMT", isplusminus ? "+" : "-");
+			SDL_Surface* pmtxt = TTF_RenderUTF8_Blended(font.large, tz, COLOR_WHITE);
+			SDL_BlitSurface(pmtxt, NULL, screen, &(SDL_Rect){x,y-SCALE1(3)});
+			x +=(pmtxt->w + SCALE1(1));
+			x = blitNumber(gmtoff_selected, x,y);
+			x += SCALE1(7); // space
 			
 			am_selected = hour_selected < 12;
 			if (show_24hour) {
@@ -287,22 +331,28 @@ int main(int argc , char* argv[]) {
 			
 			int ampm_w;
 			if (!show_24hour) {
-				x += SCALE1(10); // space
+				x += SCALE1(7); // space
 				SDL_Surface* text = TTF_RenderUTF8_Blended(font.large, am_selected ? "AM" : "PM", COLOR_WHITE);
 				ampm_w = text->w + SCALE1(2);
 				SDL_BlitSurface(text, NULL, screen, &(SDL_Rect){x,y-SCALE1(3)});
 				SDL_FreeSurface(text);
 			}
-		
+			
 			// cursor
 			x = ox;
 			y += SCALE1(19);
 			if (select_cursor!=CURSOR_YEAR) {
 				x += SCALE1(50); // YYYY/
-				x += (select_cursor - 1) * SCALE1(30);
+				x += (select_cursor - 1) * SCALE1(29);
 			}
-			blitBar(x,y, (select_cursor==CURSOR_YEAR ? SCALE1(40) : (select_cursor==CURSOR_AMPM ? ampm_w : SCALE1(20))));
-		
+			if (select_cursor>CURSOR_PLUSMINUS) {
+				x += (pmtxt->w - SCALE1(29)); // GMT+
+			}
+			if (select_cursor==CURSOR_AMPM) x-= SCALE1(3);
+			
+			blitBar(x,y, (select_cursor==CURSOR_YEAR ? SCALE1(40) : (select_cursor==CURSOR_AMPM ? ampm_w : (select_cursor==CURSOR_PLUSMINUS ? pmtxt->w : SCALE1(20)))));
+			
+			SDL_FreeSurface(pmtxt);
 			GFX_flip(screen);
 			dirty = 0;
 		}
@@ -321,9 +371,24 @@ int main(int argc , char* argv[]) {
 	// TODO: if (seconds_selected==tm.tm_sec) refresh tm and update seconds_selected
 	
 	if (save_changes) {
+		char s[4]; 
+		sprintf(s,"%ld", gmtoff_selected);
+		putFile(USERDATA_PATH "/tz.txt", s);
+		
 		char cmd[512];
 		snprintf(cmd, sizeof(cmd), "date -s '%d-%d-%d %d:%d:%d';hwclock -l -w", year_selected, month_selected, day_selected, hour_selected, minute_selected, seconds_selected);
 		system(cmd);
+		
+		char cmd2[256];
+		if (isplusminus) {
+			tz[3] = '-';
+		}
+		else {
+			tz[3] = '+';
+		}
+		snprintf(cmd2, sizeof(cmd2), "export TZ=%s", strcat(tz, s));
+		putFile(USERDATA_PATH "/cmd.txt", cmd2);
+		//system(cmd2);
 	}
 	
 	return EXIT_SUCCESS;
